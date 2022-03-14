@@ -12,42 +12,21 @@ int GameLoop::ft_check_file_inp(std::string str) {
   return (0);
 }
 
-GameLoop::~GameLoop() {
-  delete scene;
-  delete view;
-  delete pacman;
-  delete pinky;
-  delete clyde;
-  delete blinky;
-  delete inky;
-  delete timer_pacman;
-  delete timer_blinky;
-  delete timer_pinky;
-  delete timer_clyde;
-  delete timer_inky;
-  for (int i = 0; i < size_x; i++) {
-    for (int j = 0; j < size_y; j++) {
-      delete map_pix[i];
-      delete map_int[i];
-    }
-  }
-  delete[] map_pix;
-  delete[] map_int;
-}
-
 void GameLoop::ft_roll_game() {
-  timer_blinky = new QTimer();
-  timer_pinky = new QTimer();
-  timer_clyde = new QTimer();
-  timer_pacman = new QTimer();
-  timer_inky = new QTimer();
-  QObject::connect(timer_pacman, SIGNAL(timeout()), pacman, SLOT(ft_move()));
-  QObject::connect(timer_inky, SIGNAL(timeout()), inky, SLOT(ft_move_ghost()));
-  QObject::connect(timer_clyde, SIGNAL(timeout()), clyde,
+  timer_blinky = std::unique_ptr<QTimer>(new QTimer());
+  timer_pinky = std::unique_ptr<QTimer>(new QTimer());
+  timer_clyde = std::unique_ptr<QTimer>(new QTimer());
+  timer_pacman = std::unique_ptr<QTimer>(new QTimer());
+  timer_inky = std::unique_ptr<QTimer>(new QTimer());
+  QObject::connect(timer_pacman.get(), SIGNAL(timeout()), pacman.get(),
+                   SLOT(ft_move()));
+  QObject::connect(timer_inky.get(), SIGNAL(timeout()), inky.get(),
                    SLOT(ft_move_ghost()));
-  QObject::connect(timer_blinky, SIGNAL(timeout()), blinky,
+  QObject::connect(timer_clyde.get(), SIGNAL(timeout()), clyde.get(),
                    SLOT(ft_move_ghost()));
-  QObject::connect(timer_pinky, SIGNAL(timeout()), pinky,
+  QObject::connect(timer_blinky.get(), SIGNAL(timeout()), blinky.get(),
+                   SLOT(ft_move_ghost()));
+  QObject::connect(timer_pinky.get(), SIGNAL(timeout()), pinky.get(),
                    SLOT(ft_move_ghost()));
   timer_pacman->start(300);
   timer_inky->start(400);
@@ -60,25 +39,25 @@ void GameLoop::ft_create_map() {
   for (int i = 0; i < size_x; i++) {
     for (int j = 0; j < size_y; j++) {
       if (map_int[i][j] == 1) {
-        map_pix[i][j].setPixmap(QPixmap(":/pics/greystone.png"));
-        map_pix[i][j].setPos(j * 32, i * 32);
-        scene->addItem(&(map_pix[i][j]));
+        map_pix[i][j]->setPixmap(QPixmap(":/pics/greystone.png"));
+        map_pix[i][j]->setPos(j * 32, i * 32);
+        scene->addItem(map_pix[i][j].get());
       }
       if (map_int[i][j] == 3) {
-        map_pix[i][j].setPixmap(QPixmap(":/pics/ball.png"));
-        map_pix[i][j].setPos(j * 32, i * 32);
-        scene->addItem(&(map_pix[i][j]));
+        map_pix[i][j]->setPixmap(QPixmap(":/pics/ball.png"));
+        map_pix[i][j]->setPos(j * 32, i * 32);
+        scene->addItem(map_pix[i][j].get());
       }
       if (map_int[i][j] == 4) {
-        map_pix[i][j].setPixmap(QPixmap(":/pics/energizer.png"));
-        map_pix[i][j].setPos(j * 32, i * 32);
-        scene->addItem(&(map_pix[i][j]));
+        map_pix[i][j]->setPixmap(QPixmap(":/pics/energizer.png"));
+        map_pix[i][j]->setPos(j * 32, i * 32);
+        scene->addItem(map_pix[i][j].get());
       }
     }
   }
 }
 
-void GameLoop::ft_write_line_map(int *map, std::string str) {
+void GameLoop::ft_write_line_map(std::vector<int> &map, std::string str) {
   for (int i = 0; i < size_y; i++)
     map[i] = str[i] - '0';
 }
@@ -87,11 +66,14 @@ GameLoop::GameLoop(char *file_name) {
   std::string temp;
   int nb;
 
-  map_int = new int *[size_x];
-  map_pix = new QGraphicsPixmapItem *[size_x];
-  for (int i = 0; i < size_x; i++) {
-    map_int[i] = new int[size_y];
-    map_pix[i] = new QGraphicsPixmapItem[size_y];
+  map_int = std::vector<std::vector<int>>(size_x, std::vector<int>(size_y));
+  map_pix =
+      std::vector<std::vector<std::unique_ptr<QGraphicsPixmapItem>>>(size_x);
+  for (auto &each : map_pix) {
+    for (int i = 0; i < size_y; i++) {
+      each.push_back(
+          std::unique_ptr<QGraphicsPixmapItem>(new QGraphicsPixmapItem()));
+    }
   }
 
   input.open(file_name);
@@ -118,18 +100,18 @@ GameLoop::GameLoop(char *file_name) {
     std::cout << "File missing: " << file_name << ".\n";
     exit(0);
   }
-  scene = new QGraphicsScene();
-  view = new QGraphicsView();
-  this->setScene(scene);
+  scene = std::unique_ptr<QGraphicsScene>(new QGraphicsScene());
+  view = std::unique_ptr<QGraphicsView>(new QGraphicsView());
+  this->setScene(scene.get());
   ft_create_map();
   this->setStyleSheet("background-color:black;");
-  pacman = new PacMan(map_int, map_pix, scene);
+  pacman = std::unique_ptr<PacMan>(new PacMan(map_int, map_pix, scene));
   pacman->setFlag(QGraphicsPixmapItem::ItemIsFocusable);
   pacman->setFocus();
-  blinky = new Blinky(scene, map_int, pacman);
-  pinky = new Pinky(scene, map_int, pacman);
-  clyde = new Clyde(scene, map_int, pacman);
-  inky = new Inky(scene, map_int, pacman);
+  blinky = std::unique_ptr<Blinky>(new Blinky(scene, map_int, pacman));
+  pinky = std::unique_ptr<Pinky>(new Pinky(scene, map_int, pacman));
+  clyde = std::unique_ptr<Clyde>(new Clyde(scene, map_int, pacman));
+  inky = std::unique_ptr<Inky>(new Inky(scene, map_int, pacman));
   blinky->ft_set_friends(pinky, clyde, inky);
   pinky->ft_set_friends(blinky, clyde, inky);
   clyde->ft_set_friends(blinky, pinky, inky);

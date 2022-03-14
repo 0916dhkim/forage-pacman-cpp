@@ -19,11 +19,11 @@ private:
   int i_pos;
   int j_pos;
   int direction;
-  int **map_int;
-  QGraphicsPixmapItem **map_pix;
-  QGraphicsScene *scene;
-  QGraphicsTextItem *text;
-  QGraphicsTextItem *message;
+  std::vector<std::vector<int>> &map_int;
+  std::vector<std::vector<std::unique_ptr<QGraphicsPixmapItem>>> &map_pix;
+  std::shared_ptr<QGraphicsScene> scene;
+  std::unique_ptr<QGraphicsTextItem> text;
+  std::unique_ptr<QGraphicsTextItem> message;
   int lives;
   void ft_update_scene();
   int ft_check_move(int i_pos, int j_pos);
@@ -33,7 +33,10 @@ private:
   int points;
 
 public:
-  PacMan(int **map_int, QGraphicsPixmapItem **map_pix, QGraphicsScene *scene);
+  PacMan(
+      std::vector<std::vector<int>> &map_int,
+      std::vector<std::vector<std::unique_ptr<QGraphicsPixmapItem>>> &map_pix,
+      const std::shared_ptr<QGraphicsScene> &scene);
   void keyPressEvent(QKeyEvent *event);
   int ft_get_pacman_i(void);
   void ft_set_defaut();

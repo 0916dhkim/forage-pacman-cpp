@@ -7,27 +7,27 @@ void PacMan::ft_update_scene() {
   if (points == 50) {
     map_int[15][9] = 6;
     if (!flag) {
-      map_pix[15][9].setPixmap(QPixmap(":/pics/cherries.png"));
-      scene->addItem(&(map_pix[15][9]));
+      map_pix[15][9]->setPixmap(QPixmap(":/pics/cherries.png"));
+      scene->addItem(map_pix[15][9].get());
       flag = 1;
     }
   }
   if (map_int[i_pos][j_pos] == 6) {
     score += 200;
     map_int[i_pos][j_pos] = 0;
-    scene->removeItem(&(map_pix[15][9]));
+    scene->removeItem(map_pix[15][9].get());
     flag = 0;
   }
   if (map_int[i_pos][j_pos] == 3) {
     map_int[i_pos][j_pos] = 0;
     score += 10;
     points++;
-    scene->removeItem(&(map_pix[i_pos][j_pos]));
+    scene->removeItem(map_pix[i_pos][j_pos].get());
   }
   if (map_int[i_pos][j_pos] == 4) {
     scared = 1;
     map_int[i_pos][j_pos] = 0;
-    scene->removeItem(&(map_pix[i_pos][j_pos]));
+    scene->removeItem(map_pix[i_pos][j_pos].get());
   }
 }
 
@@ -49,24 +49,18 @@ void PacMan::ft_incr_score() { score += 100; }
 
 void PacMan::ft_set_lives() { lives--; }
 
-PacMan::PacMan(int **map_i, QGraphicsPixmapItem **map_p, QGraphicsScene *sc) {
-  i_pos = 15;
-  score = 0;
-  points = 0;
-  j_pos = 9;
-  counter = 0;
-  direction = 0;
-  map_int = map_i;
-  map_pix = map_p;
-  scene = sc;
-  scared = 0;
-  lives = 3;
-  text = new QGraphicsTextItem();
-  message = new QGraphicsTextItem();
+PacMan::PacMan(
+    std::vector<std::vector<int>> &map_int,
+    std::vector<std::vector<std::unique_ptr<QGraphicsPixmapItem>>> &map_pix,
+    const std::shared_ptr<QGraphicsScene> &scene)
+    : i_pos(15), j_pos(9), direction(0), map_int(map_int), map_pix(map_pix),
+      scene(scene), text(new QGraphicsTextItem()),
+      message(new QGraphicsTextItem()), lives(3), scared(0), counter(0),
+      score(0), points(0) {
   this->setPixmap(QPixmap(":/pics/pacman_left.png"));
   this->setPos(j_pos * 32, i_pos * 32);
   scene->addItem(this);
-  scene->addItem(text);
+  scene->addItem(text.get());
   ft_print_score();
 }
 
@@ -102,9 +96,9 @@ void PacMan::ft_move() {
     message->setFont(QFont("times", 40));
     message->setPlainText("YOU WIN");
     message->setPos(60, HEIGHT / 2 - 30);
-    scene->addItem(message);
+    scene->addItem(message.get());
     scene->removeItem(this);
-    scene->removeItem(text);
+    scene->removeItem(text.get());
     flag = 1;
   }
   if (lives <= 0 && !flag) {
@@ -112,9 +106,9 @@ void PacMan::ft_move() {
     message->setFont(QFont("times", 60));
     message->setPlainText("YOU LOST");
     message->setPos(80, HEIGHT / 2);
-    scene->addItem(message);
+    scene->addItem(message.get());
     scene->removeItem(this);
-    scene->removeItem(text);
+    scene->removeItem(text.get());
     flag = 1;
   }
   ft_update_scene();

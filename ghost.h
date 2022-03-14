@@ -18,8 +18,8 @@ protected:
   int map_path[size_x][size_y];
   int x_dir[4] = {1, -1, 0, 0};
   int y_dir[4] = {0, 0, 1, -1};
-  PacMan *pacman;
-  QGraphicsScene *scene;
+  std::shared_ptr<PacMan> pacman;
+  std::shared_ptr<QGraphicsScene> scene;
 
 public:
   void ft_clear_map();
