@@ -13,26 +13,13 @@ int GameLoop::ft_check_file_inp(std::string str) {
 }
 
 void GameLoop::ft_roll_game() {
-  timer_blinky = std::unique_ptr<QTimer>(new QTimer());
-  timer_pinky = std::unique_ptr<QTimer>(new QTimer());
-  timer_clyde = std::unique_ptr<QTimer>(new QTimer());
   timer_pacman = std::unique_ptr<QTimer>(new QTimer());
-  timer_inky = std::unique_ptr<QTimer>(new QTimer());
+  for (auto &ghost : ghosts) {
+    ghost->start_timer();
+  }
   QObject::connect(timer_pacman.get(), SIGNAL(timeout()), pacman.get(),
                    SLOT(ft_move()));
-  QObject::connect(timer_inky.get(), SIGNAL(timeout()), inky.get(),
-                   SLOT(ft_move_ghost()));
-  QObject::connect(timer_clyde.get(), SIGNAL(timeout()), clyde.get(),
-                   SLOT(ft_move_ghost()));
-  QObject::connect(timer_blinky.get(), SIGNAL(timeout()), blinky.get(),
-                   SLOT(ft_move_ghost()));
-  QObject::connect(timer_pinky.get(), SIGNAL(timeout()), pinky.get(),
-                   SLOT(ft_move_ghost()));
   timer_pacman->start(300);
-  timer_inky->start(400);
-  timer_clyde->start(400);
-  timer_blinky->start(400);
-  timer_pinky->start(400);
 }
 
 void GameLoop::ft_create_map() {
@@ -108,12 +95,7 @@ GameLoop::GameLoop(char *file_name) {
   pacman = std::unique_ptr<PacMan>(new PacMan(map_int, map_pix, scene));
   pacman->setFlag(QGraphicsPixmapItem::ItemIsFocusable);
   pacman->setFocus();
-  blinky = std::unique_ptr<Blinky>(new Blinky(scene, map_int, pacman));
-  pinky = std::unique_ptr<Pinky>(new Pinky(scene, map_int, pacman));
-  clyde = std::unique_ptr<Clyde>(new Clyde(scene, map_int, pacman));
-  inky = std::unique_ptr<Inky>(new Inky(scene, map_int, pacman));
-  blinky->ft_set_friends(pinky, clyde, inky);
-  pinky->ft_set_friends(blinky, clyde, inky);
-  clyde->ft_set_friends(blinky, pinky, inky);
-  inky->ft_set_friends(blinky, pinky, clyde);
+
+  ghosts.push_back(std::make_unique<Ghost>(8, 9, scene, map_int, pacman));
+  ghosts.push_back(std::make_unique<Ghost>(9, 10, scene, map_int, pacman));
 }

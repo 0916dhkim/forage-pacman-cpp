@@ -26,21 +26,13 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
 	main.cpp \
     gameclass.cpp \
-    blinky.cpp \
     pacman.cpp \
-    pinky.cpp \
-    ghost.cpp \
-    clyde.cpp \
-    inky.cpp
+    ghost.cpp
 
 HEADERS += \
     gameclass.h \
     pacman.h \
-    blinky.h \
-    pinky.h \
-    ghost.h \
-    clyde.h \
-    inky.h
+    ghost.h
 
 RESOURCES += \
     qrc.qrc

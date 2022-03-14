@@ -2,16 +2,16 @@
 #define GHOST_H
 
 #include "pacman.h"
+#include <QTimer>
+#include <random>
 
 class Ghost : public QObject, public QGraphicsPixmapItem {
   Q_OBJECT
 protected:
-  int d;
   int i_pos;
   int j_pos;
   int i_x;
   int i_y;
-  int flag;
   int i_exit;
   int j_exit;
   int direction;
@@ -20,23 +20,25 @@ protected:
   int y_dir[4] = {0, 0, 1, -1};
   std::shared_ptr<PacMan> pacman;
   std::shared_ptr<QGraphicsScene> scene;
+  std::mt19937 generator;
+  QTimer timer;
 
 public:
-  void ft_clear_map();
-  void ft_restore_path();
   void ft_set_direction();
-  virtual void ft_find_pacman() = 0;
-  virtual void ft_find_path() = 0;
+  void ft_find_pacman();
   int ft_check_intersect();
-  int ft_set_direction_near();
   int ft_get_i_pos();
   int ft_get_j_pos();
   int ft_check_move(int i_pos, int j_pos);
-  virtual void ft_set_default() = 0;
-  virtual void ft_calculate_point() = 0;
-  Ghost();
+  void ft_set_default();
+  void ft_calculate_point();
+  int random_direction();
+  void start_timer();
+  Ghost(int i_pos, int j_pos, const std::shared_ptr<QGraphicsScene> &scene,
+        std::vector<std::vector<int>> &map,
+        const std::shared_ptr<PacMan> &pacman);
 public slots:
-  virtual void ft_move_ghost() = 0;
+  void ft_move_ghost();
 };
 
 #endif // GHOST_H

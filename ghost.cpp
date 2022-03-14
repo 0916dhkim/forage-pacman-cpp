@@ -1,41 +1,93 @@
 #include "ghost.h"
 #include <QGraphicsPixmapItem>
+#include <QObject>
 
-Ghost::Ghost() {}
+Ghost::Ghost(int i_pos, int j_pos, const std::shared_ptr<QGraphicsScene> &sc,
+             std::vector<std::vector<int>> &map,
+             const std::shared_ptr<PacMan> &pc)
+    : i_pos(i_pos), j_pos(j_pos), pacman(pc), scene(sc) {
 
-void Ghost::ft_set_default() {}
-
-void Ghost::ft_move_ghost() {}
-
-void Ghost::ft_calculate_point() {}
-
-void Ghost::ft_set_direction() {
-  if (i_pos + 1 < size_x) {
-    if (map_path[i_pos + 1][j_pos] == -4)
-      direction = 2;
+  for (int i = 0; i < size_x; i++) {
+    for (int j = 0; j < size_y; j++) {
+      if (map[i][j] == 1)
+        map_path[i][j] = 0;
+      else
+        map_path[i][j] = 1;
+    }
   }
-  if (i_pos - 1 >= 0) {
-    if (map_path[i_pos - 1][j_pos] == -4)
-      direction = 1;
-  }
-  if (j_pos + 1 < size_x) {
-    if (map_path[i_pos][j_pos + 1] == -4)
-      direction = 4;
-  }
-  if (j_pos - 1 < size_x) {
-    if (map_path[i_pos][j_pos - 1] == -4)
-      direction = 3;
+  this->setPixmap(QPixmap(":/pics/blinky.png"));
+  this->setPos(j_pos * 32, i_pos * 32);
+  scene->addItem(this);
+
+  generator = std::mt19937(std::random_device()());
+
+  QObject::connect(&timer, SIGNAL(timeout()), this, SLOT(ft_move_ghost()));
+}
+
+void Ghost::ft_set_default() {
+  i_exit = i_pos;
+  j_exit = j_pos;
+  i_pos = 9;
+  j_pos = 9;
+  direction = 0;
+  this->setPos(j_pos * 32, i_pos * 32);
+}
+
+void Ghost::ft_calculate_point() {
+  if (!pacman->ft_scared_state()) {
+    i_exit = pacman->ft_get_pacman_i();
+    j_exit = pacman->ft_get_pacman_j();
+    this->setPixmap(QPixmap(":/pics/blinky.png"));
+  } else {
+    if (i_pos == 1 && j_pos == 1)
+      pacman->ft_set_scared();
+    else {
+      this->setPixmap(QPixmap(":/pics/frightened.png"));
+      i_exit = 1;
+      j_exit = 1;
+    }
   }
 }
 
-void Ghost::ft_find_pacman() {}
+void Ghost::ft_set_direction() { direction = random_direction(); }
+
+void Ghost::ft_find_pacman() {
+  if (ft_check_intersect()) {
+    return;
+  }
+  ft_set_direction();
+}
+
+void Ghost::ft_move_ghost() {
+  ft_calculate_point();
+  ft_find_pacman();
+  if (direction == 1) {
+    if (ft_check_move(i_pos - 1, j_pos))
+      i_pos--;
+  }
+  if (direction == 2) {
+    if (ft_check_move(i_pos + 1, j_pos))
+      i_pos++;
+  }
+  if (direction == 3) {
+    if (ft_check_move(i_pos, j_pos - 1))
+      j_pos--;
+  }
+  if (direction == 4) {
+    if (ft_check_move(i_pos, j_pos + 1))
+      j_pos++;
+  }
+  this->setPos(j_pos * 32, i_pos * 32);
+  if (ft_check_intersect())
+    return;
+}
 
 int Ghost::ft_get_i_pos() { return (i_pos); }
 
 int Ghost::ft_get_j_pos() { return (j_pos); }
 
 int Ghost::ft_check_move(int i_pos, int j_pos) {
-  if (map_path[i_pos][j_pos] == -5)
+  if (map_path[i_pos][j_pos] == 0)
     return (0);
   return (1);
 }
@@ -43,14 +95,12 @@ int Ghost::ft_check_move(int i_pos, int j_pos) {
 int Ghost::ft_check_intersect() {
   if (i_pos == pacman->ft_get_pacman_i() &&
       j_pos == pacman->ft_get_pacman_j() && !pacman->ft_scared_state()) {
-    ft_clear_map();
     pacman->ft_set_defaut();
     pacman->ft_set_lives();
     return (1);
   }
   if (i_pos == pacman->ft_get_pacman_i() &&
       j_pos == pacman->ft_get_pacman_j() && pacman->ft_scared_state()) {
-    ft_clear_map();
     i_pos = 8;
     j_pos = 9;
     this->setPos(j_pos * 32, i_pos * 32);
@@ -60,71 +110,9 @@ int Ghost::ft_check_intersect() {
   return (0);
 }
 
-void Ghost::ft_clear_map() {
-  for (int i = 0; i < size_x; i++) {
-    for (int j = 0; j < size_y; j++) {
-      if (map_path[i][j] != -5)
-        map_path[i][j] = -3;
-    }
-  }
+int Ghost::random_direction() {
+  std::uniform_int_distribution distribute(1, 4);
+  return distribute(generator);
 }
 
-void Ghost::ft_restore_path() {
-  int i;
-  int j;
-  int k;
-
-  i = i_exit;
-  j = j_exit;
-  while (d > 0) {
-    d--;
-    k = 0;
-    while (k < 4) {
-      i_x = i + x_dir[k];
-      i_y = j + y_dir[k];
-      if (i_x >= 0 && i_x < size_x && i_y >= 0 && i_y < size_y &&
-          map_path[i_x][i_y] == d) {
-        map_path[i_x][i_y] = -4;
-        i = i + x_dir[k];
-        j = j + y_dir[k];
-        break;
-      }
-      k++;
-    }
-  }
-}
-
-int Ghost::ft_set_direction_near() {
-  int flag;
-
-  flag = 0;
-  if (i_pos + 1 < size_x) {
-    if (i_pos + 1 == i_exit && j_pos == j_exit) {
-      direction = 2;
-      flag = 1;
-    }
-  }
-  if (i_pos - 1 >= 0) {
-    if (i_pos - 1 == i_exit && j_pos == j_exit) {
-      direction = 1;
-      flag = 1;
-    }
-  }
-  if (j_pos + 1 < size_x) {
-    if (i_pos == i_exit && j_pos + 1 == j_exit) {
-      direction = 4;
-      flag = 1;
-    }
-  }
-  if (j_pos - 1 < size_x) {
-    if (i_pos == i_exit && j_pos - 1 == j_exit) {
-      direction = 3;
-      flag = 1;
-    }
-  }
-  if (flag)
-    return (1);
-  return (0);
-}
-
-void Ghost::ft_find_path() {}
+void Ghost::start_timer() { timer.start(400); }
