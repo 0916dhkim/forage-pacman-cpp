@@ -21,7 +21,6 @@ protected:
   std::shared_ptr<PacMan> pacman;
   std::shared_ptr<QGraphicsScene> scene;
   std::mt19937 generator;
-  QTimer timer;
 
 public:
   void ft_set_direction();
@@ -33,12 +32,15 @@ public:
   void ft_set_default();
   void ft_calculate_point();
   int random_direction();
-  void start_timer();
   Ghost(int i_pos, int j_pos, const std::shared_ptr<QGraphicsScene> &scene,
         std::vector<std::vector<int>> &map,
         const std::shared_ptr<PacMan> &pacman);
+  virtual ~Ghost();
 public slots:
   void ft_move_ghost();
+
+signals:
+  void on_intersect(Ghost *target);
 };
 
 #endif // GHOST_H

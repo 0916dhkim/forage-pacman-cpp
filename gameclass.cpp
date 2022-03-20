@@ -14,9 +14,7 @@ int GameLoop::ft_check_file_inp(std::string str) {
 
 void GameLoop::ft_roll_game() {
   timer_pacman = std::unique_ptr<QTimer>(new QTimer());
-  for (auto &ghost : ghosts) {
-    ghost->start_timer();
-  }
+  timer_ghost.start(400);
   QObject::connect(timer_pacman.get(), SIGNAL(timeout()), pacman.get(),
                    SLOT(ft_move()));
   timer_pacman->start(300);
@@ -98,4 +96,25 @@ GameLoop::GameLoop(char *file_name) {
 
   ghosts.push_back(std::make_unique<Ghost>(8, 9, scene, map_int, pacman));
   ghosts.push_back(std::make_unique<Ghost>(9, 10, scene, map_int, pacman));
+  for (auto &ghost : ghosts) {
+    QObject::connect(&timer_ghost, &QTimer::timeout, ghost.get(),
+                     &Ghost::ft_move_ghost);
+    QObject::connect(ghost.get(), &Ghost::on_intersect, this,
+                     &GameLoop::handle_intersect);
+  }
+}
+
+void GameLoop::remove_ghost(Ghost *ghost) {
+  //  std::lock_guard l(ghost_mutex);
+  for (auto it = ghosts.begin(); it != ghosts.end(); ++it) {
+    if (it->get() == ghost) {
+      ghosts.erase(it);
+      return;
+    }
+  }
+}
+
+void GameLoop::handle_intersect(Ghost *ghost) {
+  // Remove ghost in next event loop.
+  QTimer::singleShot(0, this, [this, ghost] { this->remove_ghost(ghost); });
 }

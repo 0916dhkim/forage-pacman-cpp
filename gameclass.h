@@ -14,6 +14,7 @@
 #include <iomanip>
 #include <iostream>
 #include <memory>
+#include <mutex>
 #include <random>
 #include <string>
 #include <vector>
@@ -27,6 +28,10 @@ private:
   std::vector<std::unique_ptr<Ghost>> ghosts;
   std::vector<std::vector<int>> map_int;
   std::unique_ptr<QTimer> timer_pacman;
+  QTimer timer_ghost;
+  std::mutex ghost_mutex;
+
+  void remove_ghost(Ghost *);
 
 public:
   GameLoop(char *file_name);
@@ -34,6 +39,9 @@ public:
   void ft_roll_game();
   void ft_create_map();
   int ft_check_file_inp(std::string str);
+
+public slots:
+  void handle_intersect(Ghost *);
 };
 
 #endif // GAMECLASS_H

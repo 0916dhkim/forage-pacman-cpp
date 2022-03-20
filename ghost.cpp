@@ -20,9 +20,9 @@ Ghost::Ghost(int i_pos, int j_pos, const std::shared_ptr<QGraphicsScene> &sc,
   scene->addItem(this);
 
   generator = std::mt19937(std::random_device()());
-
-  QObject::connect(&timer, SIGNAL(timeout()), this, SLOT(ft_move_ghost()));
 }
+
+Ghost::~Ghost() { scene->removeItem(this); }
 
 void Ghost::ft_set_default() {
   i_exit = i_pos;
@@ -78,8 +78,9 @@ void Ghost::ft_move_ghost() {
       j_pos++;
   }
   this->setPos(j_pos * 32, i_pos * 32);
-  if (ft_check_intersect())
+  if (ft_check_intersect()) {
     return;
+  }
 }
 
 int Ghost::ft_get_i_pos() { return (i_pos); }
@@ -94,17 +95,8 @@ int Ghost::ft_check_move(int i_pos, int j_pos) {
 
 int Ghost::ft_check_intersect() {
   if (i_pos == pacman->ft_get_pacman_i() &&
-      j_pos == pacman->ft_get_pacman_j() && !pacman->ft_scared_state()) {
-    pacman->ft_set_defaut();
-    pacman->ft_set_lives();
-    return (1);
-  }
-  if (i_pos == pacman->ft_get_pacman_i() &&
-      j_pos == pacman->ft_get_pacman_j() && pacman->ft_scared_state()) {
-    i_pos = 8;
-    j_pos = 9;
-    this->setPos(j_pos * 32, i_pos * 32);
-    pacman->ft_incr_score();
+      j_pos == pacman->ft_get_pacman_j()) {
+    emit on_intersect(this);
     return (1);
   }
   return (0);
@@ -114,5 +106,3 @@ int Ghost::random_direction() {
   std::uniform_int_distribution distribute(1, 4);
   return distribute(generator);
 }
-
-void Ghost::start_timer() { timer.start(400); }
