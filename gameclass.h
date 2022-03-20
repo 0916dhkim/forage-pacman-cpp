@@ -34,6 +34,7 @@ private:
 
   void spawn_ghost(int i, int j);
   void remove_ghost(Ghost *);
+  std::vector<std::vector<int>> calculate_navmap();
 
 public:
   GameLoop(char *file_name);
@@ -45,6 +46,7 @@ public:
 public slots:
   void handle_intersect(Ghost *);
   void handle_multiply();
+  void handle_ghost();
 };
 
 #endif // GAMECLASS_H

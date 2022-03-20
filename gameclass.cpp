@@ -14,6 +14,8 @@ int GameLoop::ft_check_file_inp(std::string str) {
 
 void GameLoop::ft_roll_game() {
   timer_pacman = std::unique_ptr<QTimer>(new QTimer());
+  QObject::connect(&timer_ghost, &QTimer::timeout, this,
+                   &GameLoop::handle_ghost);
   timer_ghost.start(400);
   QObject::connect(timer_pacman.get(), SIGNAL(timeout()), pacman.get(),
                    SLOT(ft_move()));
@@ -102,9 +104,7 @@ GameLoop::GameLoop(char *file_name) {
 }
 
 void GameLoop::spawn_ghost(int i, int j) {
-  auto ghost = std::make_unique<Ghost>(i, j, scene, map_int, pacman);
-  QObject::connect(&timer_ghost, &QTimer::timeout, ghost.get(),
-                   &Ghost::ft_move_ghost);
+  auto ghost = std::make_unique<Ghost>(i, j, scene, pacman);
   QObject::connect(ghost.get(), &Ghost::on_intersect, this,
                    &GameLoop::handle_intersect);
   ghosts.push_back(std::move(ghost));
@@ -118,6 +118,19 @@ void GameLoop::remove_ghost(Ghost *ghost) {
       return;
     }
   }
+}
+
+std::vector<std::vector<int>> GameLoop::calculate_navmap() {
+  auto res = std::vector<std::vector<int>>(size_x, std::vector<int>(size_y));
+  for (int i = 0; i < size_x; i++) {
+    for (int j = 0; j < size_y; j++) {
+      res[i][j] = map_int[i][j] == 1 ? 0 : 1;
+    }
+  }
+  for (auto &ghost : ghosts) {
+    res[ghost.get()->ft_get_i_pos()][ghost.get()->ft_get_j_pos()] = 0;
+  }
+  return res;
 }
 
 void GameLoop::handle_intersect(Ghost *ghost) {
@@ -134,5 +147,12 @@ void GameLoop::handle_multiply() {
   }
   for (auto coordinate : original_coordinates) {
     spawn_ghost(coordinate.first, coordinate.second);
+  }
+}
+
+void GameLoop::handle_ghost() {
+  auto navmap = calculate_navmap();
+  for (auto &ghost : ghosts) {
+    ghost.get()->ft_move_ghost(navmap);
   }
 }

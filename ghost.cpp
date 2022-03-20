@@ -3,18 +3,9 @@
 #include <QObject>
 
 Ghost::Ghost(int i_pos, int j_pos, const std::shared_ptr<QGraphicsScene> &sc,
-             std::vector<std::vector<int>> &map,
              const std::shared_ptr<PacMan> &pc)
     : i_pos(i_pos), j_pos(j_pos), pacman(pc), scene(sc) {
 
-  for (int i = 0; i < size_x; i++) {
-    for (int j = 0; j < size_y; j++) {
-      if (map[i][j] == 1)
-        map_path[i][j] = 0;
-      else
-        map_path[i][j] = 1;
-    }
-  }
   this->setPixmap(QPixmap(":/pics/blinky.png"));
   this->setPos(j_pos * 32, i_pos * 32);
   scene->addItem(this);
@@ -58,23 +49,23 @@ void Ghost::ft_find_pacman() {
   ft_set_direction();
 }
 
-void Ghost::ft_move_ghost() {
+void Ghost::ft_move_ghost(const std::vector<std::vector<int>> &navmap) {
   ft_calculate_point();
   ft_find_pacman();
   if (direction == 1) {
-    if (ft_check_move(i_pos - 1, j_pos))
+    if (ft_check_move(i_pos - 1, j_pos, navmap))
       i_pos--;
   }
   if (direction == 2) {
-    if (ft_check_move(i_pos + 1, j_pos))
+    if (ft_check_move(i_pos + 1, j_pos, navmap))
       i_pos++;
   }
   if (direction == 3) {
-    if (ft_check_move(i_pos, j_pos - 1))
+    if (ft_check_move(i_pos, j_pos - 1, navmap))
       j_pos--;
   }
   if (direction == 4) {
-    if (ft_check_move(i_pos, j_pos + 1))
+    if (ft_check_move(i_pos, j_pos + 1, navmap))
       j_pos++;
   }
   this->setPos(j_pos * 32, i_pos * 32);
@@ -87,8 +78,9 @@ int Ghost::ft_get_i_pos() { return (i_pos); }
 
 int Ghost::ft_get_j_pos() { return (j_pos); }
 
-int Ghost::ft_check_move(int i_pos, int j_pos) {
-  if (map_path[i_pos][j_pos] == 0)
+int Ghost::ft_check_move(int i_pos, int j_pos,
+                         const std::vector<std::vector<int>> &navmap) {
+  if (navmap[i_pos][j_pos] == 0)
     return (0);
   return (1);
 }
