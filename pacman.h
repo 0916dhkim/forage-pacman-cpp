@@ -50,8 +50,7 @@ public:
   void ft_print_score();
   void ft_set_lives();
   int ft_get_point();
-public slots:
-  void ft_move();
+  void ft_move(int ghost_count);
 };
 
 #endif // PACMAN_H

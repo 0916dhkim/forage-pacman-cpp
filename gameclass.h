@@ -27,7 +27,7 @@ private:
   std::shared_ptr<PacMan> pacman;
   std::vector<std::unique_ptr<Ghost>> ghosts;
   std::vector<std::vector<int>> map_int;
-  std::unique_ptr<QTimer> timer_pacman;
+  QTimer timer_pacman;
   QTimer timer_ghost;
   QTimer timer_multiply;
   std::mutex ghost_mutex;
@@ -47,6 +47,7 @@ public slots:
   void handle_intersect(Ghost *);
   void handle_multiply();
   void handle_ghost();
+  void handle_pacman();
 };
 
 #endif // GAMECLASS_H

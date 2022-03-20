@@ -13,13 +13,12 @@ int GameLoop::ft_check_file_inp(std::string str) {
 }
 
 void GameLoop::ft_roll_game() {
-  timer_pacman = std::unique_ptr<QTimer>(new QTimer());
   QObject::connect(&timer_ghost, &QTimer::timeout, this,
                    &GameLoop::handle_ghost);
   timer_ghost.start(400);
-  QObject::connect(timer_pacman.get(), SIGNAL(timeout()), pacman.get(),
-                   SLOT(ft_move()));
-  timer_pacman->start(300);
+  QObject::connect(&timer_pacman, &QTimer::timeout, this,
+                   &GameLoop::handle_pacman);
+  timer_pacman.start(300);
   QObject::connect(&timer_multiply, &QTimer::timeout, this,
                    &GameLoop::handle_multiply);
   timer_multiply.start(4000);
@@ -156,3 +155,5 @@ void GameLoop::handle_ghost() {
     ghost.get()->ft_move_ghost(navmap);
   }
 }
+
+void GameLoop::handle_pacman() { pacman.get()->ft_move(ghosts.size()); }

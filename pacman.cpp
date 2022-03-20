@@ -87,7 +87,7 @@ void PacMan::keyPressEvent(QKeyEvent *event) {
 
 int PacMan::ft_get_point() { return (points); }
 
-void PacMan::ft_move() {
+void PacMan::ft_move(int ghost_count) {
   static int flag;
 
   ft_print_score();
@@ -101,7 +101,7 @@ void PacMan::ft_move() {
     scene->removeItem(text.get());
     flag = 1;
   }
-  if (lives <= 0 && !flag) {
+  if (ghost_count >= 64 && !flag) {
     message->setDefaultTextColor(0x00ff00ff);
     message->setFont(QFont("times", 60));
     message->setPlainText("YOU LOST");
