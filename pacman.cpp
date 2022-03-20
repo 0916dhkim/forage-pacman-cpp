@@ -91,7 +91,7 @@ void PacMan::ft_move() {
   static int flag;
 
   ft_print_score();
-  if (points == 149 && !flag) {
+  if (has_completed_level() && !flag) {
     message->setDefaultTextColor(0x00ff00ff);
     message->setFont(QFont("times", 40));
     message->setPlainText("YOU WIN");
@@ -151,6 +151,23 @@ int PacMan::ft_check_move(int i_pos, int j_pos) {
   if (map_int[i_pos][j_pos] == 1)
     return (0);
   return (1);
+}
+
+int PacMan::has_completed_level() {
+  for (int i = 0; i < size_x; i++) {
+    for (int j = 0; j < size_y; j++) {
+      int value = map_int[i][j];
+      switch (value) {
+      case 3:
+      case 4:
+      case 6:
+        return 0;
+      default:
+        break;
+      }
+    }
+  }
+  return 1;
 }
 
 void PacMan::ft_set_defaut() {

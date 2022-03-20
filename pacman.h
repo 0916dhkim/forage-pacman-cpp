@@ -27,6 +27,7 @@ private:
   int lives;
   void ft_update_scene();
   int ft_check_move(int i_pos, int j_pos);
+  int has_completed_level();
   int scared;
   int counter;
   int score;
