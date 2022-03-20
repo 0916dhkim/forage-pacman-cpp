@@ -157,7 +157,6 @@ void GameLoop::handle_multiply() {
 void GameLoop::handle_ghost() {
   std::lock_guard l(ghost_mutex);
   auto navmap(map_int);
-  std::cout << ghosts.size() << std::endl;
   for (auto &ghost : ghosts) {
     calculate_navmap(navmap);
     ghost.get()->ft_move_ghost(navmap);

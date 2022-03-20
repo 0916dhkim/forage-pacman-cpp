@@ -25,15 +25,10 @@ void PacMan::ft_update_scene() {
     scene->removeItem(map_pix[i_pos][j_pos].get());
   }
   if (map_int[i_pos][j_pos] == 4) {
-    scared = 1;
     map_int[i_pos][j_pos] = 0;
     scene->removeItem(map_pix[i_pos][j_pos].get());
   }
 }
-
-int PacMan::ft_scared_state() { return (scared); }
-
-void PacMan::ft_set_scared() { scared = !scared; }
 
 int PacMan::ft_get_score() { return (score); }
 
@@ -55,8 +50,8 @@ PacMan::PacMan(
     const std::shared_ptr<QGraphicsScene> &scene)
     : i_pos(15), j_pos(9), direction(0), map_int(map_int), map_pix(map_pix),
       scene(scene), text(new QGraphicsTextItem()),
-      message(new QGraphicsTextItem()), lives(3), scared(0), counter(0),
-      score(0), points(0) {
+      message(new QGraphicsTextItem()), lives(3), counter(0), score(0),
+      points(0) {
   this->setPixmap(QPixmap(":/pics/pacman_left.png"));
   this->setPos(j_pos * 32, i_pos * 32);
   scene->addItem(this);
@@ -168,12 +163,4 @@ int PacMan::has_completed_level() {
     }
   }
   return 1;
-}
-
-void PacMan::ft_set_defaut() {
-  i_pos = 15;
-  j_pos = 9;
-
-  direction = 0;
-  this->setPos(j_pos * 32, i_pos * 32);
 }

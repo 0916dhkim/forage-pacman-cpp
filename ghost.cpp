@@ -8,7 +8,7 @@ Ghost::Ghost(int i_pos, int j_pos, const std::shared_ptr<QGraphicsScene> &sc,
              const std::shared_ptr<PacMan> &pc)
     : i_pos(i_pos), j_pos(j_pos), pacman(pc), scene(sc) {
 
-  this->setPixmap(QPixmap(":/pics/blinky.png"));
+  this->setPixmap(QPixmap(":/pics/frightened.png"));
   this->setPos(j_pos * 32, i_pos * 32);
   scene->addItem(this);
 

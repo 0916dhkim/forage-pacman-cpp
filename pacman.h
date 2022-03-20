@@ -28,7 +28,6 @@ private:
   void ft_update_scene();
   int ft_check_move(int i_pos, int j_pos);
   int has_completed_level();
-  int scared;
   int counter;
   int score;
   int points;
@@ -40,10 +39,7 @@ public:
       const std::shared_ptr<QGraphicsScene> &scene);
   void keyPressEvent(QKeyEvent *event);
   int ft_get_pacman_i(void);
-  void ft_set_defaut();
   int ft_get_score();
-  int ft_scared_state();
-  void ft_set_scared();
   int ft_get_direction();
   int ft_get_pacman_j(void);
   void ft_incr_score();
