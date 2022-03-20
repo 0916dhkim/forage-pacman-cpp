@@ -15,13 +15,13 @@ int GameLoop::ft_check_file_inp(std::string str) {
 void GameLoop::ft_roll_game() {
   QObject::connect(&timer_ghost, &QTimer::timeout, this,
                    &GameLoop::handle_ghost);
-  timer_ghost.start(400);
+  timer_ghost.start(300);
   QObject::connect(&timer_pacman, &QTimer::timeout, this,
                    &GameLoop::handle_pacman);
   timer_pacman.start(300);
   QObject::connect(&timer_multiply, &QTimer::timeout, this,
                    &GameLoop::handle_multiply);
-  timer_multiply.start(4000);
+  timer_multiply.start(30000);
 }
 
 void GameLoop::ft_create_map() {
@@ -103,10 +103,17 @@ GameLoop::GameLoop(char *file_name) {
 }
 
 void GameLoop::spawn_ghost(int i, int j) {
-  auto ghost = std::make_unique<Ghost>(i, j, scene, pacman);
-  QObject::connect(ghost.get(), &Ghost::on_intersect, this,
-                   &GameLoop::handle_intersect);
-  ghosts.push_back(std::move(ghost));
+  QTimer::singleShot(0, this, [this, i, j]() {
+    std::lock_guard l(ghost_mutex);
+    if (ghosts.size() > 100) {
+      // Cap the number of ghosts.
+      return;
+    }
+    auto ghost = std::make_unique<Ghost>(i, j, scene, pacman);
+    QObject::connect(ghost.get(), &Ghost::on_intersect, this,
+                     &GameLoop::handle_intersect);
+    ghosts.push_back(std::move(ghost));
+  });
 }
 
 void GameLoop::remove_ghost(Ghost *ghost) {
@@ -119,17 +126,15 @@ void GameLoop::remove_ghost(Ghost *ghost) {
   }
 }
 
-std::vector<std::vector<int>> GameLoop::calculate_navmap() {
-  auto res = std::vector<std::vector<int>>(size_x, std::vector<int>(size_y));
+void GameLoop::calculate_navmap(std::vector<std::vector<int>> &navmap) {
   for (int i = 0; i < size_x; i++) {
     for (int j = 0; j < size_y; j++) {
-      res[i][j] = map_int[i][j] == 1 ? 0 : 1;
+      navmap[i][j] = map_int[i][j] == 1 ? 0 : 1;
     }
   }
   for (auto &ghost : ghosts) {
-    res[ghost.get()->ft_get_i_pos()][ghost.get()->ft_get_j_pos()] = 0;
+    navmap[ghost.get()->ft_get_i_pos()][ghost.get()->ft_get_j_pos()] = 0;
   }
-  return res;
 }
 
 void GameLoop::handle_intersect(Ghost *ghost) {
@@ -150,8 +155,11 @@ void GameLoop::handle_multiply() {
 }
 
 void GameLoop::handle_ghost() {
-  auto navmap = calculate_navmap();
+  std::lock_guard l(ghost_mutex);
+  auto navmap(map_int);
+  std::cout << ghosts.size() << std::endl;
   for (auto &ghost : ghosts) {
+    calculate_navmap(navmap);
     ghost.get()->ft_move_ghost(navmap);
   }
 }

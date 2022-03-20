@@ -34,7 +34,7 @@ private:
 
   void spawn_ghost(int i, int j);
   void remove_ghost(Ghost *);
-  std::vector<std::vector<int>> calculate_navmap();
+  void calculate_navmap(std::vector<std::vector<int>> &navmap);
 
 public:
   GameLoop(char *file_name);
