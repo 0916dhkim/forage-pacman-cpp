@@ -29,8 +29,10 @@ private:
   std::vector<std::vector<int>> map_int;
   std::unique_ptr<QTimer> timer_pacman;
   QTimer timer_ghost;
+  QTimer timer_multiply;
   std::mutex ghost_mutex;
 
+  void spawn_ghost(int i, int j);
   void remove_ghost(Ghost *);
 
 public:
@@ -42,6 +44,7 @@ public:
 
 public slots:
   void handle_intersect(Ghost *);
+  void handle_multiply();
 };
 
 #endif // GAMECLASS_H

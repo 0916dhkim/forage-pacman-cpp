@@ -18,6 +18,9 @@ void GameLoop::ft_roll_game() {
   QObject::connect(timer_pacman.get(), SIGNAL(timeout()), pacman.get(),
                    SLOT(ft_move()));
   timer_pacman->start(300);
+  QObject::connect(&timer_multiply, &QTimer::timeout, this,
+                   &GameLoop::handle_multiply);
+  timer_multiply.start(4000);
 }
 
 void GameLoop::ft_create_map() {
@@ -94,18 +97,21 @@ GameLoop::GameLoop(char *file_name) {
   pacman->setFlag(QGraphicsPixmapItem::ItemIsFocusable);
   pacman->setFocus();
 
-  ghosts.push_back(std::make_unique<Ghost>(8, 9, scene, map_int, pacman));
-  ghosts.push_back(std::make_unique<Ghost>(9, 10, scene, map_int, pacman));
-  for (auto &ghost : ghosts) {
-    QObject::connect(&timer_ghost, &QTimer::timeout, ghost.get(),
-                     &Ghost::ft_move_ghost);
-    QObject::connect(ghost.get(), &Ghost::on_intersect, this,
-                     &GameLoop::handle_intersect);
-  }
+  spawn_ghost(1, 17);
+  spawn_ghost(19, 1);
+}
+
+void GameLoop::spawn_ghost(int i, int j) {
+  auto ghost = std::make_unique<Ghost>(i, j, scene, map_int, pacman);
+  QObject::connect(&timer_ghost, &QTimer::timeout, ghost.get(),
+                   &Ghost::ft_move_ghost);
+  QObject::connect(ghost.get(), &Ghost::on_intersect, this,
+                   &GameLoop::handle_intersect);
+  ghosts.push_back(std::move(ghost));
 }
 
 void GameLoop::remove_ghost(Ghost *ghost) {
-  //  std::lock_guard l(ghost_mutex);
+  std::lock_guard l(ghost_mutex);
   for (auto it = ghosts.begin(); it != ghosts.end(); ++it) {
     if (it->get() == ghost) {
       ghosts.erase(it);
@@ -117,4 +123,16 @@ void GameLoop::remove_ghost(Ghost *ghost) {
 void GameLoop::handle_intersect(Ghost *ghost) {
   // Remove ghost in next event loop.
   QTimer::singleShot(0, this, [this, ghost] { this->remove_ghost(ghost); });
+}
+
+void GameLoop::handle_multiply() {
+  std::lock_guard l(ghost_mutex);
+  std::vector<std::pair<int, int>> original_coordinates;
+  for (auto &ghost : ghosts) {
+    original_coordinates.push_back(std::pair<int, int>(
+        ghost.get()->ft_get_i_pos(), ghost.get()->ft_get_j_pos()));
+  }
+  for (auto coordinate : original_coordinates) {
+    spawn_ghost(coordinate.first, coordinate.second);
+  }
 }
