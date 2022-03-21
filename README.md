@@ -8,6 +8,8 @@
 ## How to Run
 
 1. Open `pacman.pro` project file in Qt Creator.
+1. Put the full path of "map.txt" file into Projects > Run > Command line arguments.
+  ![image](https://user-images.githubusercontent.com/8978815/159198151-95347129-bc0f-40bd-823a-94d08def4114.png)
 1. Press F5 to compile & debug.
 
 ## Rules
